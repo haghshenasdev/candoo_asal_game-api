@@ -11,19 +11,19 @@ class Profile extends Controller
 {
     public function login(Request $request): \Illuminate\Http\JsonResponse
     {
-        $validator =  $request->validate([
-            'phone' => ['required','regex:/(09)[0-9]{9}/','digits:11','numeric'],
+        $validData =  $request->validate([
+            'number' => ['required','regex:/(09)[0-9]{9}/','digits:11','numeric'],
             'password' => ['required'],
             'device_name' => 'required',
         ]);
 
-        if ($validator->fails()){
-            return response()->json([
-                'errors' => $validator->errors(),
-                'status' => 'error'
-            ],400);
-        }
-        if (Auth::attempt(['phone' => $request->input('phone'),'password' => $request->input('password')])){
+//        if ($validator->fails()){
+//            return response()->json([
+//                'errors' => $validator->errors(),
+//                'status' => 'error'
+//            ],400);
+//        }
+        if (Auth::attempt(['number' => $validData['number'],'password' => $validData['password']])){
             $user = Auth::user();
             $token = $user->createToken($request->device_name)->plainTextToken;
 
@@ -48,23 +48,22 @@ class Profile extends Controller
 
     public function register(Request $request): \Illuminate\Http\JsonResponse
     {
-        $validator =  $request->validate([
+        $validData =  $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'number' => ['required','regex:/(09)[0-9]{9}/','digits:11','numeric','unique:'.User::class],
             'password' => ['required', 'confirmed'],
             'device_name' => 'required',
         ]);
 
-        if ($validator->fails()){
-            return response()->json([
-                'errors' => $validator->errors(),
-                'status' => 'error'
-            ],400);
-        }
+//        if ($validator->fails()){
+//            return response()->json([
+//                'errors' => $validator->errors(),
+//                'status' => 'error'
+//            ],400);
+//        }
 
-        $inputs = $request->all();
-        $inputs['password'] = bcrypt($inputs['password']);
-        $user = User::query()->create($inputs);
+        $validData['password'] = bcrypt($validData['password']);
+        $user = User::query()->create($validData);
         $token = $user->createToken($request->device_name)->plainTextToken;
 
         return response()->json([
